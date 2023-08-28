@@ -40,12 +40,12 @@
 	@param	irq
 			touch interrupt pin
 */
-CST816S::CST816S(int sda, int scl, int rst, int irq) {
+// Added TwoWire reference
+CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire &wire) : _wire(wire) { 
   _sda = sda;
   _scl = scl;
   _rst = rst;
   _irq = irq;
-
 }
 
 /*!
@@ -76,7 +76,8 @@ void IRAM_ATTR CST816S::handleISR(void) {
 			type of interrupt FALLING, RISING..
 */
 void CST816S::begin(int interrupt) {
-  Wire.begin(_sda, _scl);
+  // Changed config to make I2C initilization 400kHz
+  _wire.begin(_sda, _scl, 400000);
 
   pinMode(_irq, INPUT);
   pinMode(_rst, OUTPUT);
@@ -167,12 +168,12 @@ String CST816S::gesture() {
 */
 uint8_t CST816S::i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t *reg_data, uint32_t length)
 {
-  Wire.beginTransmission(addr);
-  Wire.write(reg_addr);
-  if ( Wire.endTransmission(true))return -1;
-  Wire.requestFrom(addr, length, true);
+  _wire.beginTransmission(addr);
+  _wire.write(reg_addr);
+  if ( _wire.endTransmission(true))return -1;
+  _wire.requestFrom(addr, length, true);
   for (int i = 0; i < length; i++) {
-    *reg_data++ = Wire.read();
+    *reg_data++ = _wire.read();
   }
   return 0;
 }
@@ -191,11 +192,11 @@ uint8_t CST816S::i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t *reg_data, ui
 */
 uint8_t CST816S::i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t *reg_data, uint32_t length)
 {
-  Wire.beginTransmission(addr);
-  Wire.write(reg_addr);
+  _wire.beginTransmission(addr);
+  _wire.write(reg_addr);
   for (int i = 0; i < length; i++) {
-    Wire.write(*reg_data++);
+    _wire.write(*reg_data++);
   }
-  if ( Wire.endTransmission(true))return -1;
+  if ( _wire.endTransmission(true))return -1;
   return 0;
 }

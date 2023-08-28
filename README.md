@@ -1,3 +1,6 @@
+# Modifications Made
+- Support for two touch screens at once (Passing in TwoWire object)
+
 # CST816S
  An Arduino library for the CST816S capacitive touch screen IC
  

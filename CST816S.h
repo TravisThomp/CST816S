@@ -26,6 +26,7 @@
 #define CST816S_H
 
 #include <Arduino.h>
+#include <Wire.h>  // Include the Wire library
 
 #define CST816S_ADDRESS     0x15
 
@@ -38,7 +39,6 @@ enum GESTURE {
   SINGLE_CLICK = 0x05,
   DOUBLE_CLICK = 0x0B,
   LONG_PRESS = 0x0C
-
 };
 
 struct data_struct {
@@ -51,18 +51,15 @@ struct data_struct {
   uint8_t versionInfo[3];
 };
 
-
-
 class CST816S {
-
   public:
-    CST816S(int sda, int scl, int rst, int irq);
+    // Added TwoWire reference
+    CST816S(int sda, int scl, int rst, int irq, TwoWire &wire = Wire);
     void begin(int interrupt = RISING);
     void sleep();
     bool available();
     data_struct data;
     String gesture();
-
 
   private:
     int _sda;
@@ -70,10 +67,10 @@ class CST816S {
     int _rst;
     int _irq;
     bool _event_available;
+    TwoWire &_wire;  // Add a reference to a TwoWire object
 
     void IRAM_ATTR handleISR();
     void read_touch();
-
     uint8_t i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t * reg_data, uint32_t length);
     uint8_t i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t * reg_data, uint32_t length);
 };
