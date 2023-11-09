@@ -54,6 +54,7 @@ struct data_struct {
 class CST816S {
   public:
     // Added TwoWire reference
+    CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire &wire = Wire);
     CST816S(int sda, int scl, int rst, int irq, TwoWire &wire = Wire);
     void begin(int interrupt = RISING);
     void sleep();
@@ -61,14 +62,18 @@ class CST816S {
     data_struct data;
     String gesture();
 
+    void setOrientation(int orientation);
+
   private:
     int _sda;
     int _scl;
     int _rst;
     int _irq;
     bool _event_available;
+    int _orientation;
     TwoWire &_wire;  // Add a reference to a TwoWire object
 
+    byte orientGesture(byte gestureID);
     void IRAM_ATTR handleISR();
     void read_touch();
     uint8_t i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t * reg_data, uint32_t length);

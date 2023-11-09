@@ -31,21 +31,56 @@
 
 /*!
     @brief  Constructor for CST816S
-	@param	sda
-			i2c data pin
-	@param	scl
-			i2c clock pin
-	@param	rst
-			touch reset pin
-	@param	irq
-			touch interrupt pin
+  @param	sda
+      i2c data pin
+  @param	scl
+      i2c clock pin
+  @param	rst
+      touch reset pin
+  @param	irq
+      touch interrupt pin
 */
 // Added TwoWire reference
-CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire &wire) : _wire(wire) { 
+CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire& wire)
+  : CST816S(sda, scl, rst, irq, 0, wire) {
+} 
+
+CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& wire) {
+  _wire = wire;
+  _orientation = orientation;
   _sda = sda;
   _scl = scl;
   _rst = rst;
   _irq = irq;
+}
+
+byte CST816S::orientGesture(byte gestureID)) {
+  // checking if non orientation specific gesture
+  if (gestureID < 1 || gestureID > 4) {
+    return orientation;
+  }
+
+  switch (gestureID) {
+  case 1:
+    break;
+  case 2:
+    orientation = (orientation + 1) % 4;
+    break;
+  case 3:
+    orientation = (orientation + 2) % 4;
+    break;
+  case 4:
+    if (orientation == 0) {
+      orientation = 3;
+    }
+    else {
+      orientation = (orientation - 1) % 4;
+    }
+    break;
+  default:
+    break;
+  }
+
 }
 
 /*!
@@ -55,7 +90,7 @@ void CST816S::read_touch() {
   byte data_raw[8];
   i2c_read(CST816S_ADDRESS, 0x01, data_raw, 6);
 
-  data.gestureID = data_raw[0];
+  data.gestureID = orientGesture(data_raw[0]);
   data.points = data_raw[1];
   data.event = data_raw[2] >> 6;
   data.x = ((data_raw[2] & 0xF) << 8) + data_raw[3];
@@ -72,8 +107,8 @@ void IRAM_ATTR CST816S::handleISR(void) {
 
 /*!
     @brief  initialize the touch screen
-	@param	interrupt
-			type of interrupt FALLING, RISING..
+  @param	interrupt
+      type of interrupt FALLING, RISING..
 */
 void CST816S::begin(int interrupt) {
   // Changed config to make I2C initilization 400kHz
@@ -82,11 +117,11 @@ void CST816S::begin(int interrupt) {
   pinMode(_irq, INPUT);
   pinMode(_rst, OUTPUT);
 
-  digitalWrite(_rst, HIGH );
+  digitalWrite(_rst, HIGH);
   delay(50);
   digitalWrite(_rst, LOW);
   delay(5);
-  digitalWrite(_rst, HIGH );
+  digitalWrite(_rst, HIGH);
   delay(50);
 
   i2c_read(CST816S_ADDRESS, 0x15, &data.version, 1);
@@ -114,7 +149,7 @@ bool CST816S::available() {
 void CST816S::sleep() {
   digitalWrite(_rst, LOW);
   delay(5);
-  digitalWrite(_rst, HIGH );
+  digitalWrite(_rst, HIGH);
   delay(50);
   byte standby_value = 0x03;
   i2c_write(CST816S_ADDRESS, 0xA5, &standby_value, 1);
@@ -125,52 +160,56 @@ void CST816S::sleep() {
 */
 String CST816S::gesture() {
   switch (data.gestureID) {
-    case NONE:
-      return "NONE";
-      break;
-    case SWIPE_DOWN:
-      return "SWIPE DOWN";
-      break;
-    case SWIPE_UP:
-      return "SWIPE UP";
-      break;
-    case SWIPE_LEFT:
-      return "SWIPE LEFT";
-      break;
-    case SWIPE_RIGHT:
-      return "SWIPE RIGHT";
-      break;
-    case SINGLE_CLICK:
-      return "SINGLE CLICK";
-      break;
-    case DOUBLE_CLICK:
-      return "DOUBLE CLICK";
-      break;
-    case LONG_PRESS:
-      return "LONG PRESS";
-      break;
-    default:
-      return "UNKNOWN";
-      break;
+  case NONE:
+    return "NONE";
+    break;
+  case SWIPE_DOWN:
+    return "SWIPE DOWN";
+    break;
+  case SWIPE_UP:
+    return "SWIPE UP";
+    break;
+  case SWIPE_LEFT:
+    return "SWIPE LEFT";
+    break;
+  case SWIPE_RIGHT:
+    return "SWIPE RIGHT";
+    break;
+  case SINGLE_CLICK:
+    return "SINGLE CLICK";
+    break;
+  case DOUBLE_CLICK:
+    return "DOUBLE CLICK";
+    break;
+  case LONG_PRESS:
+    return "LONG PRESS";
+    break;
+  default:
+    return "UNKNOWN";
+    break;
   }
+}
+
+void CST816S::setOrientation(int orientation) {
+  _orientation = orientation;
 }
 
 /*!
     @brief  read data from i2c
-	@param	addr
-			i2c device address
-	@param	reg_addr
-			device register address
-	@param	reg_data
-			array to copy the read data
-	@param	length
-			length of data
+  @param	addr
+      i2c device address
+  @param	reg_addr
+      device register address
+  @param	reg_data
+      array to copy the read data
+  @param	length
+      length of data
 */
-uint8_t CST816S::i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t *reg_data, uint32_t length)
+uint8_t CST816S::i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t* reg_data, uint32_t length)
 {
   _wire.beginTransmission(addr);
   _wire.write(reg_addr);
-  if ( _wire.endTransmission(true))return -1;
+  if (_wire.endTransmission(true))return -1;
   _wire.requestFrom(addr, length, true);
   for (int i = 0; i < length; i++) {
     *reg_data++ = _wire.read();
@@ -180,23 +219,23 @@ uint8_t CST816S::i2c_read(uint16_t addr, uint8_t reg_addr, uint8_t *reg_data, ui
 
 /*!
     @brief  write data to i2c
-	@brief  read data from i2c
-	@param	addr
-			i2c device address
-	@param	reg_addr
-			device register address
-	@param	reg_data
-			data to be sent
-	@param	length
-			length of data
+  @brief  read data from i2c
+  @param	addr
+      i2c device address
+  @param	reg_addr
+      device register address
+  @param	reg_data
+      data to be sent
+  @param	length
+      length of data
 */
-uint8_t CST816S::i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t *reg_data, uint32_t length)
+uint8_t CST816S::i2c_write(uint8_t addr, uint8_t reg_addr, const uint8_t* reg_data, uint32_t length)
 {
   _wire.beginTransmission(addr);
   _wire.write(reg_addr);
   for (int i = 0; i < length; i++) {
     _wire.write(*reg_data++);
   }
-  if ( _wire.endTransmission(true))return -1;
+  if (_wire.endTransmission(true))return -1;
   return 0;
 }
