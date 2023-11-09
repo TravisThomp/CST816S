@@ -41,9 +41,8 @@
       touch interrupt pin
 */
 // Added TwoWire reference
-CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire& wire)
+CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire& wire) : _wire(wire)
 {
-  _wire = wire;
   _orientation = 0;
   _sda = sda;
   _scl = scl;
@@ -51,8 +50,8 @@ CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire& wire)
   _irq = irq;
 }
 
-CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& wire) {
-  _wire = wire;
+CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& wire) : _wire(wire)
+{
   _orientation = orientation;
   _sda = sda;
   _scl = scl;
@@ -67,7 +66,6 @@ byte CST816S::orientGesture(byte gestureID) {
   }
 
   return (gestureID + _orientation - 1) % 4 + 1;
-}
 }
 
 /*!
