@@ -42,8 +42,14 @@
 */
 // Added TwoWire reference
 CST816S::CST816S(int sda, int scl, int rst, int irq, TwoWire& wire)
-  : CST816S(sda, scl, rst, irq, 0, wire) {
-} 
+{
+  _wire = wire;
+  _orientation = 0;
+  _sda = sda;
+  _scl = scl;
+  _rst = rst;
+  _irq = irq;
+}
 
 CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& wire) {
   _wire = wire;
@@ -54,7 +60,7 @@ CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& w
   _irq = irq;
 }
 
-byte CST816S::orientGesture(byte gestureID)) {
+byte CST816S::orientGesture(byte gestureID) {
   // checking if non orientation specific gesture
   if (gestureID < 1 || gestureID > 4) {
     return orientation;
