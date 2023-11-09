@@ -60,12 +60,22 @@ CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& w
 }
 
 byte CST816S::orientGesture(byte gestureID) {
+  static const byte rotation90[5] = { 0, 0x03, 0x04, 0x02, 0x01 };
+  static const byte rotation180[5] = { 0, 0x02, 0x01, 0x04, 0x03 };
+  static const byte rotation270[5] = { 0, 0x04, 0x03, 0x01, 0x02 };
   // checking if non orientation specific gesture
   if (gestureID < 1 || gestureID > 4 || _orientation == 0) {
     return gestureID;
   }
+  
+  switch (_orientation) {
+  case 1: return rotation90[gestureID];
+  case 2: return rotation180[gestureID];
+  case 3: return rotation270[gestureID];
+  default: return gestureID; // No rotation or unknown rotation
+  }
 
-  return (gestureID + _orientation - 1) % 4 + 1;
+  return (gestureID - 1 + _orientation) % 4 + 1
 }
 
 /*!
