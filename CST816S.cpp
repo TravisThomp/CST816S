@@ -62,12 +62,12 @@ CST816S::CST816S(int sda, int scl, int rst, int irq, int orientation, TwoWire& w
 
 byte CST816S::orientGesture(byte gestureID) {
   // checking if non orientation specific gesture
-  if (gestureID < 1 || gestureID > 4) || _orientation == 0) {
+  if (gestureID < 1 || gestureID > 4 || _orientation == 0) {
     return gestureID;
   }
 
-    return (gestureID + _orientation - 1) % 4 + 1;
-  }
+  return (gestureID + _orientation - 1) % 4 + 1;
+}
 }
 
 /*!
