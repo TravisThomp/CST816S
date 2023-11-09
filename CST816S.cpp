@@ -67,15 +67,13 @@ byte CST816S::orientGesture(byte gestureID) {
   if (gestureID < 1 || gestureID > 4 || _orientation == 0) {
     return gestureID;
   }
-  
+
   switch (_orientation) {
   case 1: return rotation90[gestureID];
   case 2: return rotation180[gestureID];
   case 3: return rotation270[gestureID];
   default: return gestureID; // No rotation or unknown rotation
   }
-
-  return (gestureID - 1 + _orientation) % 4 + 1
 }
 
 /*!
